@@ -1,6 +1,5 @@
 package  
 {
-	import com.signt.interfaces.IWorkers;
 	import com.signt.WorkerFactory;
 	import com.signt.PseudoThread;
 	
@@ -12,7 +11,7 @@ package
 	 * @author Bagus
 	 */
 
-	public class LoopWorker extends WorkerFactory implements IWorkers
+	public class LoopWorker extends WorkerFactory
 	{
 	
 		public function LoopWorker(loader:LoaderInfo=null, privileges:Boolean = false)   {

@@ -1,7 +1,8 @@
 package {
 	
-	import com.signt.interfaces.IWorkers;
 	import com.signt.events.WorkerEvent;
+	
+
 	
 	import flash.display.*;
 	import flash.events.*;
@@ -31,7 +32,7 @@ package {
             stage.scaleMode = StageScaleMode.NO_SCALE;
             stage.align = StageAlign.TOP_LEFT;
 			stage.quality = StageQuality.BEST;
-			stage.frameRate = 60;
+			stage.frameRate = 30;
 			// start the worker
 			water = new WaterWorker(stage.loaderInfo);
 			water.addEventListener(WorkerEvent.READY, onWorkerStarted);

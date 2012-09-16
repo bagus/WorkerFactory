@@ -1,13 +1,10 @@
 package com.signt {
 	
-    /** 
-     * 
-     * The DynamicSWF is a class for generating swf bytes code from defined classname
-     * 
-	 * @author Bagus
-     * @mail bagus@signt.com
-     * 
-     */	 
+	/** 
+	 *
+	 * The DynamicSWF is a class for generating swf bytes code from defined classname
+	 *
+	 */	 
 	
 	import com.codeazur.as3swf.*;
 	import com.codeazur.as3swf.data.*;

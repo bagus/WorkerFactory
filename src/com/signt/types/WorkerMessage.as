@@ -1,11 +1,5 @@
-package com.signt.types 
-{
-	/**
-	 * ...
-	 * @author Bagus
-	 */
-	public class WorkerMessage
-	{
+package com.signt.types {
+	public class WorkerMessage {
 		public static const READY : int = 0;
 		public static const DEBUG : int = 1;
 		public static const ERROR : int = 2;

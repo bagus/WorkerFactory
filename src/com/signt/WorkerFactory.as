@@ -5,7 +5,7 @@ package  com.signt
 	 * 
 	 * The WorkerFactory is an extendable worker class with built-in messaging function for communication between main and worker
 	 * 
-	 * version 0.5.1
+	 * version 0.5.2
 	 * 
 	 * Released under MIT license:
 	 * http://www.opensource.org/licenses/mit-license.php
@@ -13,7 +13,7 @@ package  com.signt
 	 * @author Bagus
 	 * @mail bagus@signt.com
 	 * 
-     */	 
+	 */	 
 
 	import flash.display.*;
 	import flash.events.*;
@@ -21,11 +21,14 @@ package  com.signt
 	import flash.utils.*;
 	import flash.net.*;
 	
-	import com.signt.interfaces.IWorkers;
+	import com.codeazur.as3swf.SWF;
+	
+	import com.signt.interfaces.IWorkerFactory;
 	import com.signt.events.WorkerEvent;
 	import com.signt.types.WorkerMessage;
+	import com.signt.GlobalData;
 	
-	public class WorkerFactory extends Sprite implements IWorkers 
+	public class WorkerFactory extends Sprite implements IWorkerFactory 
 	{	
 		private var __incomingMessageChannel:MessageChannel;
 		private var __outgoingMessageChannel:MessageChannel;
@@ -44,7 +47,7 @@ package  com.signt
 		
 		protected var __worker:Worker;
 		
-		public function WorkerFactory(loader:LoaderInfo = null, giveAppPrivileges:Boolean = false) {
+		public function WorkerFactory(loader:LoaderInfo = null, giveAppPrivileges:Boolean = false, noCache:Boolean=false) {
 			
 			if(Worker.isSupported) {
 				if (Worker.current.isPrimordial) {
@@ -54,8 +57,14 @@ package  com.signt
 					} 
 					__isPrimordial = true;
 					__loaderInfo = loader;
-					
-					var swf:ByteArray = DynamicSWF.fromClass(getQualifiedClassName(this).replace(/::/g, "."), __loaderInfo.bytes);
+					var cn : String = getQualifiedClassName(this).replace(/::/g, ".");
+					var swf:ByteArray
+					if(!noCache) {
+						if (!GlobalData.getInstance("WorkerFactory")[cn]) {
+							GlobalData.getInstance("WorkerFactory")[cn] = DynamicSWF.fromClass(cn, __loaderInfo.bytes);
+						}
+						swf = GlobalData.getInstance("WorkerFactory")[cn];
+					} else swf = DynamicSWF.fromClass(cn, __loaderInfo.bytes);
 					__worker = WorkerDomain.current.createWorker(swf, giveAppPrivileges);
 					__incomingMessageChannel = Worker.current.createMessageChannel(__worker);
 					__outgoingMessageChannel = __worker.createMessageChannel(Worker.current);
@@ -78,10 +87,7 @@ package  com.signt
 				__isPrimordial = true;
 			}
 			__reset();			
-
 		}
-		
-		
 		
 		final public function get isPrimordial():Boolean {
 			return (!__worker?true:__isPrimordial);
@@ -116,19 +122,19 @@ package  com.signt
 			__DATA		= { };							
 		}
 		
-        /**
-         * Calling a function on the other side, if you calling from main it will call function on worker, vice versa
-         * 
-         * @param method The function name to be called.
-         * @param args The function parameters to be passed.
+		/**
+		 * Calling a function on the other side, if you calling from main it will call function on worker, vice versa
+		 * 
+		 * @param method The function name to be called.
+		 * @param args The function parameters to be passed.
 		 * @param onComplete a callback which is called when process has been completed
 		 * @param onProgress a callback for handle progress event and cancelation.
 		 * @param onError a callback which is called when an error has occured.
-         * 
-         */		
+		 * 
+		 */		
 		
 		final public function call(method:String, args:Array = null, onComplete:Function = null, onProgress:Function = null, onError:Function = null) : Boolean {
-			if (this.isPrimordial&&!__ready) { 
+			if (__isPrimordial && !__ready) { 
 				error("worker is not ready"); 
 				return false; 
 			} 
@@ -152,44 +158,42 @@ package  com.signt
 			return true;
 		}				
 
-        /**
-         * Calling a function on worker side, this function is only can be called from main and when not in single thread mode
-         * 
-         * @param method The function name to be called.
-         * @param args The function parameters to be passed.
+		/**
+		 * Calling a function on worker side, this function is only can be called from main and when not in single thread mode
+		 * 
+		 * @param method The function name to be called.
+		 * @param args The function parameters to be passed.
 		 * @param onComplete a callback which is called when process has been completed
 		 * @param onProgress a callback for handle progress event and cancelation.
 		 * @param onError a callback which is called when an error has occured.
-         * 
-         */		
+		 * 
+		 */		
 		
 		final public function callWorker(method:String, args:Array = null, onComplete:Function = null, onProgress:Function = null, onError:Function = null) : Boolean {
-			if (!singleThreadMode && isPrimordial) {
-				if (call(method, args, onComplete, onProgress, onError)) return true;
-				return false;
+			if (!__singleThreadMode && __isPrimordial) {
+				return call(method, args, onComplete, onProgress, onError);
 			}
 			return false;
 		}				
 		
-        /**
-         * Tracing a message.
-         */		
+		/**
+		 * Tracing a message.
+		 */		
 		 
 		protected function debug(...args) : void { 
-
 			if (!Capabilities.isDebugger) return;  
-			if (this.isPrimordial) 
+			if (__isPrimordial) 
 				trace.apply(null, ["Debug:"].concat(args)); 
 			else send([WorkerMessage.DEBUG, ["[w]"].concat(args)]); 
 		}
 		
-        /**
-         * Displaying an error message.
-         */		
+		/**
+		 * Displaying detailed error message.
+		 */		
 		
 		protected function error(...args) : void { 
 			if (!Capabilities.isDebugger) return;  
-			if (this.isPrimordial) { 
+			if (__isPrimordial) { 
 				var error :String = args[0]+"\n";
 				if(args.length>1)
 				for (var i:int = 1; i < args.length; i++) {
@@ -234,63 +238,63 @@ package  com.signt
 			timer.addEventListener(TimerEvent.TIMER,todo);
 			timer.start();
 		}
-        /**
-         * Set the value of data on both side, so that data on both sides had the same value
-         *
-         * @param varname Property name.
-         * @param value The value to be set.
-         *
-         */		
+		/**
+		 * Set the value of data on both side, so that data on both sides had the same value
+		 *
+		 * @param varname Property name.
+		 * @param value The value to be set.
+		 *
+		 */		
 		
 		final public function dataSet(name:String, value:*) : void {
 			__DATA[name] = value;
-			if(!singleThreadMode) send([WorkerMessage.DATA_SET, [name, value]]);
+			if(!__singleThreadMode) send([WorkerMessage.DATA_SET, [name, value]]);
 		}
 
-        /**
-         * Delete the value of data on both side
-         *
-         * @param varname Property name.
-         * @param value The value to be set.
-         *
-         */		
+		/**
+		 * Delete the value of data on both side
+		 *
+		 * @param varname Property name.
+		 * @param value The value to be set.
+		 *
+		 */		
 		
 		final public function dataDelete(name:String) : void {
 			delete __DATA[name];
-			if(!singleThreadMode) send([WorkerMessage.DATA_DELETE,[name]]);
+			if(!__singleThreadMode) send([WorkerMessage.DATA_DELETE,[name]]);
 		}
 		
-        /**
-         * Returns the value of data on current side
-         *
-         * @param name Property name.
+		/**
+		 * Returns the value of data on current side
+		 *
+		 * @param name Property name.
 		 *    
-         */				
+		 */				
 		
 		final public function dataGet(name:String) : * {
 			return __DATA[name];
 		}
 		
-        /**
-         * Syncronize the data value in current side with the other side
-         *
-         * @param name Property name.
+		/**
+		 * Syncronize the data value on both side
+		 *
+		 * @param name Property name.
 		 *    
-         */		
+		 */		
 		
 		final public function dataSync(name:String) : void {
-			if(!singleThreadMode) send([WorkerMessage.DATA_SYNC, [name]]);
+			if(!__singleThreadMode) send([WorkerMessage.DATA_SYNC, [name]]);
 		}
 		
-        /**
-         * Destoy the workers and clear any data
-         *
-         * @param callback a callback to return success or fail state
+		/**
+		 * Destroy the worker
+		 *
+		 * @param callback a callback to return success or fail state
 		 *    
-         */		
+		 */		
 		
 		public function destroy(callback:Function = null) : void {
-			if (this.isPrimordial) {
+			if (__isPrimordial) {
 				this.call("destroy", [], function(success:Boolean):void {
 					if (success) {
 						__ready = false;
@@ -340,12 +344,12 @@ package  com.signt
 		}
 		
 		final private function send(msg:Array) : void {
-			if (!hasWorker) {
+			if (!__worker) {
 				__processMessage(msg);
 				return;
 			}
-			var messageChannel : MessageChannel = this.isPrimordial?__incomingMessageChannel:__outgoingMessageChannel;
-				messageChannel.send(msg);
+			if (__isPrimordial)__incomingMessageChannel.send(msg);
+			else __outgoingMessageChannel.send(msg);
 		}
 		
 		final private function __processMessage(msg:Array) : void {
@@ -356,7 +360,6 @@ package  com.signt
 			switch(cmd) {
 				case WorkerMessage.READY :
 					__ready = true;
-					debug("worker ready!");
 					if (hasEventListener(WorkerEvent.READY)) 
 						dispatchEvent(new Event(WorkerEvent.READY));					
 					break;

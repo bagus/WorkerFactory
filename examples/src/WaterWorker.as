@@ -10,7 +10,6 @@ package
 	
 	import be.nascom.flash.graphics.Rippler;
 	
-	import com.signt.interfaces.IWorkers;
 	import com.signt.events.WorkerEvent;
 	import com.signt.WorkerFactory;
 	
@@ -21,7 +20,7 @@ package
 	 * @author Bagus
 	 */
 
-	public class WaterWorker extends WorkerFactory implements IWorkers
+	public class WaterWorker extends WorkerFactory
 	{
 		[Embed(source="../embeds/images/shallow-water-750509-ga.jpg")]
         private var _sourceImage : Class;
@@ -122,7 +121,7 @@ package
 		}
 		
         final private function onMouseMove(event : MouseEvent) : void {
-			drawRipple(bitmap.mouseX * _scale, bitmap.mouseY * _scale);
+			drawRipple(bitmap.mouseX, bitmap.mouseY,10);
         }		
 
 		final public function start():void {
@@ -141,7 +140,7 @@ package
 			}
 		}
 		
-		final public function drawRipple(x : int, y : int, size:int = 20) : void {
+		final public function drawRipple(x : int, y : int, size:int = 10) : void {
 			if(callWorker("drawRipple", arguments)) return;
 			_rippler.drawRipple(x, y, size * _scale, 1);
 		}

@@ -1,7 +1,6 @@
 package  
 {
 	
-	import com.signt.interfaces.IWorkers;
 	import com.signt.events.WorkerEvent;
 	import com.signt.PseudoThread;
 	import com.signt.WorkerFactory;
@@ -10,7 +9,7 @@ package
 	import com.adobe.crypto.MD5;
 	
 
-	public class MultiWorker extends WorkerFactory implements IWorkers	{
+	public class MultiWorker extends WorkerFactory	{
 
 		
 		

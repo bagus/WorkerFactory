@@ -3,14 +3,14 @@ package com.signt
 	import flash.events.TimerEvent;
 	import flash.utils.Timer;
 	
-    /** 
-     * 
-     * The PseudoThread is a simple timer based multithreading class to execute batch of serial jobs through the queue
-     * 
+	/** 
+	 * 
+	 * The PseudoThread is a simple timer based multithreading class to execute batch of serial jobs through the queue
+	 * 
 	 * @author Bagus
-     * @mail bagus@signt.com
-     * 
-     */
+	 * @mail bagus@signt.com
+	 * 
+	 */
 	 
 	public class PseudoThread 
 	{
@@ -19,13 +19,13 @@ package com.signt
 		private var _timer : Timer;
 		private var _iteration : int = 1;
 
-        /**
-         * Creates timer based pseudo thread instance.
-         * 
-         * @param waitingtime The amount of delay time before execute the next job in miliseconds
-         * @param iteration The number of job batch to be executed when timer triggered.
-         * 
-         */
+		/**
+		 * Creates timer based pseudo thread instance.
+		 * 
+		 * @param waitingtime The amount of delay time before execute the next job in miliseconds
+		 * @param iteration The number of job batch to be executed when timer triggered.
+		 * 
+		 */
 		
 		public function PseudoThread(waitingtime:int=0,iteration:int=1) 
 		{
@@ -35,13 +35,13 @@ package com.signt
 			_timer = new Timer(waitingtime);
 		}
 		
-        /**
-         * Adding job to the queue
-         * 
-         * @param method The method or abstract function to be execute
-         * @param params the method arguments
-         * 
-         */		
+		/**
+		 * Adding job to the queue
+		 * 
+		 * @param method The method or abstract function to be execute
+		 * @param params the method arguments
+		 * 
+		 */		
 		
 		final public function add(method:Function, params:Array=null):void {
 			_jobs.push( { method:method, params:params } );
@@ -72,9 +72,9 @@ package com.signt
 			}
 		}
 		
-        /**
-         * execute the all jobs in the queue
-         */	
+		/**
+		 * execute the all jobs in the queue
+		 */	
 		
 		final public function execute():void {
 			if(!_running) {
@@ -83,9 +83,9 @@ package com.signt
 			}
 		}
 		
-        /**
-         * stopping execution and clearing the queue
-         */		
+		/**
+		 * stopping execution and clearing the queue
+		 */		
 		
 		public function stop():void {
 			if(_running) {
