@@ -140,7 +140,7 @@ package  com.signt
 			} 
 			
 			// sanitize the arguments
-	
+			if (args == null) args = [];
 			if (onError!=null && args.indexOf(onError) != -1) args.pop();
 			if (onProgress!=null && args.indexOf(onProgress) != -1) args.pop();
 			if (onComplete != null && args.indexOf(onComplete) != -1) args.pop();			
@@ -150,7 +150,9 @@ package  com.signt
 				__jobs[__jobID] = { id:__jobID, onComplete:onComplete, onProgress:onProgress, onError:onError, single:true };
 			}
 			try {
-				send([WorkerMessage.CALL, { id:(onComplete!=null?__jobID:0), method:method, args:args, onComplete: !(onComplete == null) , onProgress: !(onProgress == null), onError: !(onError == null) } ]);			
+				if(!__singleThreadMode)
+					send([WorkerMessage.CALL, { id:(onComplete != null?__jobID:0), method:method, args:args, onComplete: !(onComplete == null) , onProgress: !(onProgress == null), onError: !(onError == null) } ]);			
+				else __processMessage([WorkerMessage.CALL, { id:(onComplete != null?__jobID:0), method:method, args:args, onComplete: !(onComplete == null) , onProgress: !(onProgress == null), onError: !(onError == null) } ]);
 			} catch (e:*) { 
 				error(e);
 				if(onComplete!=null) delete __jobs[__jobID];
